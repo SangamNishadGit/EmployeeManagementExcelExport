@@ -1,0 +1,70 @@
+package com.sangam.service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sangam.bean.Employee;
+import com.sangam.repo.EmployeeRepository;
+import com.sangam.util.EmployeeUtils;
+import com.sangam.util.ExcelExportService;
+
+import jakarta.servlet.http.HttpServletResponse;
+
+@Service
+public class EmployeeServiceImpl implements IEmployeeService {
+
+	@Autowired
+	private EmployeeRepository repo;
+	
+	@Autowired
+	private ExcelExportService excelExport;
+
+	@Override
+	public Integer saveEmployee(Employee emp) {
+
+		EmployeeUtils.calculationDetails(emp);
+		Employee tempEmployee = repo.save(emp);
+		return tempEmployee.getEmpId();
+
+	}
+
+	@Override
+	public void updateEmployee(Employee emp) {
+
+		EmployeeUtils.calculationDetails(emp);
+		repo.save(emp);
+	}
+
+	@Override
+	public void deleteEmployee(Integer id) {
+
+		repo.deleteById(id);
+
+	}
+
+	@Override
+	public Employee getEmployeeById(Integer id) {
+
+		Optional<Employee> emp = repo.findById(id);
+		if (emp.isPresent()) {
+			return emp.get();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public List<Employee> getListOfEmployees() {
+		return repo.findAll();
+	}
+	
+	@Override
+	public void excelExport(HttpServletResponse response) throws IOException {
+		excelExport.excelExport(HttpServletResponse response);
+	}
+
+}

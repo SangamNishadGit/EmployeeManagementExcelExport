@@ -1,0 +1,62 @@
+package com.sangam.util;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+
+import com.sangam.bean.Employee;
+import com.sangam.repo.EmployeeRepository;
+
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class ExcelExportService {
+
+	@Autowired
+	private EmployeeRepository repo;
+
+	public void excelExport() throws IOException {
+		List<Employee> listOfEmployee = repo.findAll();
+
+		Workbook workbook = new HSSFWorkbook();
+		Sheet sheet = workbook.createSheet("Employee Management");
+
+		Row headerRow = sheet.createRow(0);
+		headerRow.createCell(0).setCellValue("Id");
+		headerRow.createCell(1).setCellValue("Name");
+		headerRow.createCell(2).setCellValue("Fees");
+
+		int counter = 1;
+
+		for (Employee emp : listOfEmployee) {
+			Row dataRow = sheet.createRow(counter);
+			dataRow.createCell(0).setCellValue(emp.getEmpId());
+			dataRow.createCell(1).setCellValue(emp.getEmpName());
+			dataRow.createCell(2).setCellValue(emp.getEmpFee());
+			counter++;
+		}
+
+		// Write workbook to FileOutputStream
+
+		// setting header response
+		HttpServletResponse response = null;
+		ServletOutputStream fos =response.getOutputStream();
+		workbook.write(fos);
+		fos.close();
+		
+		 // Set response headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "data.xlsx");
+	}
+
+}
